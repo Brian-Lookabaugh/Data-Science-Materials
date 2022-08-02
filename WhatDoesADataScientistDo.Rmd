@@ -1,0 +1,197 @@
+---
+title: "What Does a Data Scientist Do?"
+author: "Brian Lookabaugh"
+output: html_document
+---
+
+```{r include=FALSE}
+pacman::p_load(
+  "haven",
+  "tidyverse"
+)
+```
+
+# Why Data Analysis?
+
+What is there to be gained from analyzing data? Data analysis in an incredibly useful tool that helps us understand the world around us in ways that we, on our own, cannot accomplish. As incredible as the human brain is, those computers in our head face numerous limitations. For one, we rely heavily on generalizations when making sense of the world around us. For example, I know that when the temperature begins to drop and the sky begins to darken, there is probably a good chance of rain. How do I know this? Did I mentally recall each individual day I have experienced where the wind picked up and the clouds rolled in and mathematically determined that, in over 50% of those days, it rained? Obviously not. Instead, my assumption is based on a generalization of those types of days. However, my generalizations could easily be wrong and, as a result, my understanding of the world around me and my ability to make accurate predictions about the future is limited.
+
+In fact, this leads me to my second point. Not only do our brains operate off of generalizations, but we are also incredibly susceptible to biases. Let's continue with the rain example. Conventionally speaking, we all associate dark clouds and temperature drops with a looming storm. However, many would-be storms never materialize or simply move away from us, never dropping a single bit of rain in our direction. In some cases, we may even know deep down that it probably won't rain. However, if we're in the middle of a drought, we may be so desperate for rain that our desires interfere with our predictive capabilities. In other cases, maybe I have noticed that, every time I wear a green shirt, it rains. Surely, my green shirt causes rain somehow! In reality, this "relationship" is likely just a random fluke, but out brains may tell us otherwise, insisting that a pattern exists where it does not. In many instances, when we are so *sure* that it will rain, it does not.
+
+In contrast, data is not like us. It is dispassionate. It has no desires or wants. Data simply *is*. Couple data with today's computational powers and we now have a series of powerful tools at our hands to overcome our own limitations and psychological biases to accurately predict things and understand the world around us. Because of these capabilities, data analysis is used practically *everywhere*. In business, it is used to predict and identify things that lead to profit. In finance, it is used to identify lucrative stock options. In pharmacology, it is used to determine if a drug works. In the social sciences, it is used to investigate a wide number of questions. Why does civil war occur? What economic policies do the best at lifting people out of poverty? What explains why certain people suffer from mental illness? These examples barely scratch the surface of where data analysis is applied to.
+
+# Why Programming?
+
+Programming is a word that is often misunderstood in today's time. Programming *is not* exclusively "hacking into the mainframe", developing a video game, or working on the "back-end" of a website. Computer programming is used in a wide variety of contexts and the treatment and management of data is no different. Consider the following line of code:
+
+```{r, results="hide"}
+data(mtcars)
+View(mtcars)
+```
+
+Voila! You just witnessed programming before your very eyes! What we did here was load a data set about various car models into a statistical programming software called "R". While I won't go into too much detail here, trust me when I say that the number of things that you can do with data and statistical programming is massive. Because of this diversity of capabilities, programming (or, more simply, telling a computer *exactly* what you want it to do), is a preferable option for those working with data. You can use programming for very simple tasks. For example, I simply want to know the average horsepower of the vehicles recorded in the "mtcars" data set:
+
+```{r}
+mean(mtcars$hp)
+```
+
+That wasn't too difficult at all. I just told my program that I wanted the mean (average) of the horsepower variable (hp) from the mtcars data set. However, you can also do comparatively more complex things as well:
+
+```{r}
+scatterplot <- ggplot(mtcars,
+  aes(x = hp, y = mpg)) + 
+  geom_point(aes(col = factor(cyl))) +
+  geom_smooth(method = "lm", col = "firebrick") +
+  theme_bw() +
+  labs(title = "The Relationship Between Horsepower, MPG, and Cylinders", 
+      subtitle = "From the mtcars Data Set",
+      y = "Miles per Gallon",
+      x = "Horsepower",
+      color = "Number of Cylinders")
+plot(scatterplot)
+```
+
+As a result of this code, we now have a nice-looking graph. Now, that looks more complicated but, like anything, when you break it down, the code itself isn't nearly as intimidating as it may look. By this point, I hope that it is clear why data analysis is important and why data scientists code. Next, we will work through the steps of the data science process. A quick caveat before we turn to the data science process: data scientists would love to regularly work with data sets as clean and simplistic as the mtcars data set that we are using for this walk through. In reality, the data that data scientists usually end up using is incredibly messy and this data requires hours upon hours of tedious work to "clean". Further, data scientists are typically interested in questions that are not incredibly easy to answer. As a result, the typical data science workload is *much* more complicated than what you will see below. However, the point of this document is to *simplify* the term "data science" for you. As a result, knowing all of the "ins and outs" isn't necessary. Since we're dealing with a cars data set, consider the walk through below as a toy car. A toy car is not even comparable to the complexity of a real car, but, in showing you a toy car, I can pretty accurately explain what a car is to you and how it works.
+
+# 1. The Data Collection Process
+
+For a data scientist to examine data, they first need... the data. In this section, I am not going to go over the data collection process itself. Instead, we are just going to use a small data set (the mtcars data set) throughout the remainder of this walk through. In practice, data scientists must go out into the wild (the internet) to retrieve their data or, in many cases, they have access to company data. In either case, the data scientist must *plan* before they collect data. If a data scientist is to understand what data to collect, they must understand exactly what question(s) they are trying to answer. Once a data scientist has identified their question and has downloaded the appropriate data, they are ready to move on to the next stage of data science work.
+
+# 2. The Data Manipulation Process
+
+Even when a data scientist has identified the data they need, the data as one collects is hardly ever the data as they need it. Data sets can be messy (typos, inconsistent formatting for things like dates or names, etc.) and may require a lot of work to "clean" before it is ready for analysis. In other cases, the data may be recorded well, but, for the purposes of their own research, they may need to make some changes to the data (manipulation) before it is ready to be used to answer their specific research question. Right now, what I just described probably sounds *really* vague. Below, we will go over some examples of why data manipulation is so important.
+
+Again, let's take a look at the mtcars data set:
+
+```{r echo=FALSE}
+head(mtcars)
+```
+
+Note that this output does not show *all* of the observations (car models) in this data set. Instead, this shows us the first 6 observations in this data set (Mazda Rx4, Mazda Rx4 Wag, etc.) and the various variables (mpg, cyl, disp, etc.) as well. Focus on the "am" variable. This variable is designed to capture whether a vehicle has automatic (0) or manual (1) transmission. Imagine that you are a data scientist for a car company and your boss wants to know all sorts of information about manual transmission vehicles, but manual transmission vehicles only. You would need to manipulate the data so that only manual transmission vehicles are in your data set. We can do this with the following line of code:
+
+```{r, result="hide"}
+mtcars_manual <- mtcars %>%
+  filter(am == "1")
+```
+
+Or perhaps, we just think that "am" isn't a good name for this variable. So, we can manipulate the data to fix this:
+
+```{r, results="hide"}
+rename(mtcars_manual,
+       transmission = am)
+```
+
+Or, we can get even more complex and create a variable that takes on the value of "1" if a vehicle has the highest horsepower for its respective number of carburetors and a "0" if a vehicle does *not* have the highest horsepower with respect to its number of carburetors:
+
+```{r, results="hide"}
+mtcars_manual <- mtcars_manual %>%
+  group_by(carb) %>%
+  mutate(highest_hp_per_carb =
+    if_else(hp == max(hp), 1, 0))
+```
+
+The number of ways you can manipulate data is seemingly infinite. This is why it is on the part of the data scientist to know exactly how they need to manipulate their data to prepare it for analysis.
+
+# 3. Data Visualization
+
+Data visualization is the easiest way to express patterns and relationships within data. Graphs, maps, charts, etc. All of these are examples of data visualization. Not only is data visualization the most intuitive and aesthetically-pleasing way to present data, it is also an incredibly important step for a data scientist to truly understand what the data looks like. Let's review some examples of why data visualization is so crucial. First, we will take a look at the average weight of vehicles within the mtcars data set:
+
+```{r}
+mean(mtcars$wt)
+```
+
+It appears that the average weight for a vehicle in this data set is 3.22 thousand pounds. But, let's investigate this further. While the *average* weight may be 3.22 thousand pounds, this does not mean that we can expect the typical vehicle in this data set (or outside of what is covered in this data set) to be around 3.22 thousand pounds. Let's generate a histogram to see if our skepticism is correct:
+
+```{r}
+histogram <- ggplot(mtcars,
+  aes(x = wt)) + 
+  geom_histogram(binwidth = 1,
+   color = "darkblue", fill = "lightblue") +
+  theme_bw() +
+  labs(title = "Distribution of Vehicle Weights", 
+      subtitle = "From the mtcars Data Set",
+      y = "Count of Vehicles",
+      x = "Vehicle Weight")
+plot(histogram)
+```
+
+From the histogram above, it does seem like our suspicions were correct. While the plurality of vehicles have a weight that averages out to 3,000 pounds, a *majority* of vehicles in the data *do not* have a weight that that rounds out to 3,000 (2,500 pounds to 3,500 pounds). Even though the average weight suggested that most of the vehicles were around 3,000 pounds, closer examination through data visualization demonstrated that the mean statistic was a bit misleading! Let's do some more investigation.
+
+```{r echo=FALSE}
+plot(scatterplot)
+```
+
+It looks like that, as horsepower increases, miles per gallon goes down. Further, it seems that the number of cylinders are correlated with both horsepower and miles per gallon since 4 cylinders are associated with lower horsepower and higher miles per gallon while 8 cylinders are associated with higher horsepower and lower miles per gallon. Let's use data visualization to add another variable into the mix to investigate our data further.
+
+```{r}
+gears_plot <- ggplot(mtcars,
+  aes(x = hp, y = mpg)) + 
+  geom_point(aes(col = factor(cyl))) +
+  geom_smooth(method = "lm", col = "firebrick") +
+  theme_bw() + 
+  labs(title = "Horsepower, MPG, and Number of Cylinders By Number of Forward Gears",
+   subtitle = "From the mtcars Data Set",
+   x = "Horsepower",
+   y = "Miles per Gallon",
+   color = "Number of Cylinders") + 
+  facet_wrap(~ gear, scales = "free")
+plot(gears_plot)
+```
+
+So there is a lot of information here. What did we learn from adding another variable (number of forward gears) into the mix? First, look at the range of horsepower on the x-axis. Compare the range of horsepower for vehicles who have 4 forward gears compared to those that have 5 forward gears. Notice the difference? Within this data set, the range of horsepower for vehicles with 4 forward gears is around 70 horsepower (120 - 50). However, look at the range for vehicles with 5 forward gears. On the low end, these vehicles have 100 horsepower, but on the high end, they have over 300 (that's over a 200 horsepower range). This information alone tells us that horsepower ranges much more widely for vehicles that have 5 forward gears compared to vehicles with 4 or 3.
+
+What else can be determined from these plots? Remember the first scatter plot with this information? For the most parts, all of the pink dots (4 cylinders) had low horsepower and high miles per gallon, green dots (6 cylinders) had slightly lower miles per gallon rates and slightly higher horsepower, and blue dots (8 cylinder) largely had the highest amount of horsepower with the lowest miles per gallon rate. Does this relationship hold when we create separate plots based on the number of forward gears? Yes, it largely does. It does not seem that splitting the data set into three different samples based on the number of forward gears alters the pattern that we have already noticed. However, in doing this, we can also see that most of our 4-cylinder vehicles have 4 forward gears while most of our 8-cylinders have 3, suggest that the number of cylinders and the number of forward gears are correlated.
+
+# 4. Modeling
+
+Now, we get to the fun (or most complicated) part. To best explain what statistical modeling is, it is helpful to understand the logic for why we might need statistical models. Again, consider that you are a data scientist. From the mtcars data set, your boss wants you to do a couple of things. First, you are asked to predict the miles per gallon of vehicles that are not contained within your data set. Second, you need to gather information on the exact relationship between miles per gallon and horsepower. If you increase a vehicle's horsepower by one-unit, exactly how much should a vehicle's miles per gallon rate decrease? Your boss says this task is crucial. The company needs to be able to predict miles per gallon on all vehicles so that it can understand how to craft the optimal fuel-efficient vehicle. The company also needs to know information on the exact trade-off between miles per gallon and horsepower. Preferably, they would like nuanced information on the exact relationship between miles per gallon and other aspects of a car likely associated with miles per gallon as well. What are you to do?
+
+When asked questions such as these, the power of statistical models and machine learning algorithms becomes apparent. But what even are these things? In short, statistical models and machine learning algorithms are mathematical tools that take data assigned to them and provide output to the user (the data scientist) that contains all sorts of helpful information. These tools can give you the capacity to predict values with a high degree of accuracy. Likewise, they can also explain the relationship between two or more variables, such as miles per gallon and horsepower, while controlling for the effect of other variables.
+
+Let's go back to the rain prediction example that was referenced earlier. We know that a lot of things influence whether it will rain or not. Off the top of our heads, we know that the season of the year matters. Maybe we think that spring brings the most rain. So does your geographic location (the Sahara isn't getting a lot of rain). I personally live in Texas, so that location is what matters for predicting whether I will get rain. And, if you'll recall from the example earlier, I'm pretty convinced that me wearing a green shirt causes rain. In a way, just from that, I've constructed a model. It would look something like this:
+
+**Rain = Spring + Texas + Green Shirt**
+
+Next, if we had data on whether it rained for my location, whether I was wearing a green shirt, and whether it was spring, I could use this model to predict whether or not it will rain and also understand the relationship between rain and spring/Texas/wearing a green shirt, respectively. With complete transparency, this model is terrible. It is unlikely to predict rain well at all and we are leaving out *so* many relevant variables. Still, I hope I got the point across.
+
+Below, I am estimating a very simple model trying to predict and understand variation in miles per gallon for vehicles. Again, note that this is a very simplistic model. Depending on how technical you want to get, there are thousands of unique models out there. It is up to the data scientist to truly know both their research question and their data so that they select the appropriate model and make appropriate adjustments to ensure that they are meeting all of the mathematical assumptions of their model. In fact, models (when misused) can be very dangerous. Data scientists can use the wrong models or violate the mathematical assumptions of the model, rendering results that are completely out of touch with reality. As a data scientist, this is why it is important to always pay close attention to the tools that you are working with.
+
+Okay, now back to the miles per gallon model! Again, we are trying to predict miles per gallon and understand the relationship between miles per gallon and the predictor variables. We are going to use a statistical model (or a machine learning algorithm, depending on who you are talking to) called linear regression to do so:
+
+```{r}
+mpg_model <- lm(mpg ~
+  hp + cyl + gear + carb + am,
+  data = mtcars)
+summary(mpg_model)
+```
+
+Okay, so what on earth are all of these numbers for? First, to make things transparent, this was the model (Note that the intercept is just the value of MPG before we introduced the effect of the predictor variables):
+
+**Miles per Gallon = Intercept + Horsepower + Cylinders + Gears + Carburetors + Manual**
+
+So, let's plug some of these numbers from the regression output into this model. We are getting these numbers from the "Estimate" column, which provides us with information on the size and direction (negative or positive) of the effect between the predictor variables (horsepower, cylinders, etc.) and miles per gallon.
+
+**MPG = 24.33 + -0.02(HP) + -0.78(Cylinders) + 1.58(Gears) + -1.10(Carburetors) + 3.33(Manual)**
+
+To get a better understanding of what these effects look like, let's look at the effect of horsepower on MPG. The results from this model tell us that, for every 1 horsepower increase in a vehicle, we can expect a decrease in MPG by .02 miles, while controlling for the effect of the number of cylinders, the number of gears, the number of carburetors, and whether a car has manual transmission or automatic. Much like the rain model, this one isn't much better (for reasons that I won't get into here). So don't use this model to predict your own personal car's MPG.
+
+Actually... let's do that anyways just to demonstrate 1) why this model isn't a good one and 2) how you are able to predict things with a statistical model. I drive a 2015 Chevrolet Cruze. I get roughly 30 mpg. I'll go ahead and plug my information into this model and see how accurate it is.
+
+**MPG = 24.33 + -0.02(140) + -0.78(4) + 1.58(4) + -1.10(1) + 3.33(0)**
+
+Now, if we do some math here...
+
+**24.33 - 2.8 - 3.12 + 6.32 -1.10 + 0 = 23.63 MPG**
+
+For one, phew. I'm glad this isn't what I get. Secondly, our model didn't do a great job at predicting my Cruze's MPG. Still, hopefully this was helpful for you in understanding what modeling is. While this model wasn't great, if you give a data scientist enough time to get familiar with their data and to think of all the things that might impact their outcome variable (in this case, miles per gallon), you can be assured that a data scientist could generate a highly predictive model that would be able to predict mileage for your car.
+
+While predicting miles per gallon may be interesting, hopefully you are able to see the real-world power of models. These are the tools that can be used to understand what leads to cancer and also what helps prevent cancer. These are the tools that can be used to predict COVID-19 outbreaks. These are the tools that can be used to evaluate what economic policies lift people out of poverty. This is, in part, why data science is so exciting.
+
+# 5. Data Storytelling
+
+However, even if we find incredible ground-breaking results, this means little if we can't communicate *what the results are* effectively. Remember seeing all of those numbers after I ran the linear regression? Imagine if I didn't explain that to you at all. Imagine if I just expected you to stare at the numbers and be impressed. In the real world, only a tiny percentage of people can look at a regression output and exclaim "oohs" and "aahs". Directly interpreting models is such a niche skill to have and it is foolish to expect that non-data scientists, who are also busy people and have their own respective specializations, should be able to understand statistical jargon.
+
+This is where the skill and process of data storytelling is crucial. For our results to mean anything, we need to be able to explain them *clearly* to those around us. I may have just developed a model that could make the company that I work at an extra $4 million next year, but if I can't communicate what my results are outside of using obscure math terminology, the bosses may not be too keen to listen to my suggestions. Still, if we find that conveying what we found in words is too difficult, we can re-visit step 3 and appreciate data visualization again. Oftentimes, a nice graph or figure can do wonders for getting your point across. Overall, as interesting and exciting as modeling is, we have to be able to explain our model in an accessible manner or risk our results not being considered at all.
+
+# In Conclusion
+
+Thank you for making it to the end and I hope that, after this, you have a stronger understanding of what data science is and what data scientists do! While this brief introduction really only scratches the surface, that is completely okay. If you're *really* interested and want to know more, then you might be the demographic that should consider giving data science or any data-related career field a chance.

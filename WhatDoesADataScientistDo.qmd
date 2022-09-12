@@ -2,7 +2,6 @@
 title: "What Does a Data Scientist Do?"
 author: "Brian Lookabaugh"
 toc: true
-number-sections: true
 format: 
   html:
     self-contained: true

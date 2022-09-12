@@ -2,7 +2,6 @@
 title: "Guide to Data Manipulation in R"
 author: "Brian Lookabaugh"
 toc: true
-number-sections: true
 format: 
   html:
     code-background: true

@@ -2,7 +2,6 @@
 title: "Guide to Data Manipulation in Python"
 author: "Brian Lookabaugh"
 toc: true
-number-sections: true
 format: 
   html:
     self-contained: true

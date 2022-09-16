@@ -1,0 +1,397 @@
+---
+title: "Introductory SQL: Translating R Syntax Into SQL"
+author: Brian Lookabaugh
+toc: true
+format: 
+  html:
+    self-contained: true
+    code-background: true
+---
+
+SQL (short for Structured Query Language) is one of the most powerful tools in business industries. While it is an essential tool for data-related professions, SQL's applicability to modern-day business practices renders SQL as a valuable tool for a wide array of professions. Basically, any profession that collects and stores a lot of data can utilize SQL to make sense of their data. SQL allows users to "query" the exact information they need from large databases. Not only is this helpful for retrieving subsets of data from massive data sets, SQL also allows users to perform various data manipulation tasks.
+
+Despite the prominence of SQL, there are various data-related positions where SQL is not commonly employed. For example, in academia, researchers rarely have access to (or practical need of) large databases where SQL's applicability thrives. In my own personal research, I rarely ever encountered data sets that exceeded 10,000 rows. Due to this small size, I was simply able to import these data sets into R and do all of my data manipulation with dplyr. However, this scenario is very much the exception rather than the rule.
+
+This document serves to outline SQL to those who are familiar with statistical programming but are not familiar with SQL. After reviewing core statements and operators, the remainder of this document seeks to translate R's dplyr syntax into SQL. In this way, this document is best suited for those who are familiar with R in particular.
+
+## Statements, Clauses, and Operators
+
+Below represents a list of common statements, clauses, and operators you will encounter using SQL and a description of what they do. As we translate R into SQL, we will be able to see the applicability of these statements and operators with greater ease.
+
+### SELECT Operators
+
+-   `SELECT`: Selects columns from a database. Users can opt to select all columns from the database (`SELECT *`) or a *select* number of columns (`SELECT col1, col2`).
+
+-   `DISTINCT`: Only selects unique values. Duplicate values are naturally excluded using this after the `SELECT` statement (`SELECT DISTINCT *`).
+
+-   `COUNT`: Returns the number of rows that are met by a specified condition. For example, if we have a data set with 30 employees, running `SELECT COUNT(Employee_ID)` should return a value of 30.
+
+-   `MAX`/`MIN`: Returns the minimum/maximum amount in a specified column (`SELECT MAX(Salary)`).
+
+-   `AVG`: Returns the average value from a numeric column (`SELECT AVG(Salary)`).
+
+-   `SUM`: Returns the total added value from a numeric column (`SELECT SUM(Salary)`).
+
+-   `AS`: The `AS` keyword allows us to create aliases. With aliases, we can rename columns to something that we would prefer instead. Alternatively, if we are creating new columns, we can use aliases to name these newly generated columns as well. For example, we could execute the following: `SELECT Salary AS Sal`. Alternatively, we could also do something like: `SELECT SUM(Salary) AS Sum_Sal`.
+
+-   `FROM`: `FROM` is not actually an operator associated with the `SELECT` statement. It is actually its own crucial part of the standard query. With `FROM`, we specify where we are pulling the data... from. For example, borrowing from the code directly above, an actual query would only run with something like the following: `SELECT SUM(Salary) AS Sum_Sal FROM Employees` where "Employees" reflects the name of the table we are pulling from. If we would like, we can also use an alias for our table that we are pulling from as well: `SELECT SUM(Salary) AS Sum_Sal FROM Employees AS Emp`.
+
+### WHERE Operators
+
+-   `WHERE`: The `WHERE` clause is a powerful tool that allows us to filter retrieved data on certain conditions. For example, if we only wanted data on employee salaries where employees make over \$65,000 annually, we would run: `SELECT Salary FROM Employees WHERE Salary > 65000`. Alternatively, we may only want information on salaries from employees who are in the HR department: `SELECT Salary FROM Employees WHERE Department = 'HR'`.
+
+-   `AND`/`OR`/`NOT`: These operators can be combined with the `WHERE` clause to specify information we need. For example, we may want salaries for employees working in HR `AND` management: `SELECT Salary, Department FROM Employees WHERE Department = 'HR' AND Department = 'Management'`. Alternatively, we may be interested in salaries for management and for other employees who make more than \$65,000 annually: `SELECT Salary, Department FROM Employees WHERE Department = 'Management' OR Salary > 65000`. Lastly, we may want information salaries for employees in management but `NOT` if those employees make 6-figures: `SELECT Salary, Department FROM Employees WHERE Department = 'Management' AND NOT Salary >= 100000`.
+
+-   `IS NULL`/`IS NOT NULL`: These operators are helpful for identifying nulls and selecting columns with null values removed. For example, if we would like to identify whether the Salary column has null values: `SELECT Salary FROM Employees WHERE Salary IS NULL`. Alternatively, if we just wanted to
+
+-   `LIKE`: This operator is a powerful tool that allows us to select data without exact characteristics specified. The `LIKE` operator and the wildcard ('%') are how we do this. For example, perhaps we would like to select a list of employees whose name starts with "A": `SELECT EmployeeName FROM Employees WHERE EmployeeName LIKE 'A%'`. To find employee names that end in "a", you would simply switch the position of "a" and the wildcard (%). We could also find employee names that begin in "A" but end in "w": `SELECT EmployeeName FROM Employees WHERE EmployeeName LIKE 'A%w'`.
+
+-   `IN`: This operator allows us to specify multiple conditions under the `WHERE` clause. For example, we can use this operator if we would like to select the salaries of employees in HR, management, and sales: `SELECT Salary, Department FROM Employees WHERE Department IN ('HR', 'Management', 'Sales')`.
+
+-   `BETWEEN`: This operator allows us to select values within a specified range. For example, if we wanted to select employees who made between \$30,000 and \$60,000, we could run the following: `SELECT Salary FROM Employees WHERE Salary BETWEEN 30000 AND 60000`.
+
+### Other Syntax
+
+This section briefly reviews other types of SQL syntax that are commonly used.
+
+-   `LIMIT`: This clause is helpful when we wish to preview our data but we do not wish to see the entire amount of data acquired. This is especially important when we are dealing with large data sets where querying the entire data set would require a decent amount of time. `LIMIT` is added to the end of a query along with the number of rows desire (`LIMIT 5`, for example).
+
+-   `GROUP BY`: This statement allows us to preform certain types of data manipulation tasks (counts, averages, etc.) by certain groups from selected rows. For example, we may wish to know the average salary of employees based on department. We can do so with: `SELECT AVG(Salary) AS Avg_Salary, Department FROM Employees GROUP BY Department`.
+
+-   `HAVING`: This clause is unique in that its purpose is practical. SQL does not allow for `WHERE` when dealing with aggregate functions (such as `GROUP BY`). To overcome this, we have the `HAVING` clause which allows us to do essentially the same things that a `WHERE` clause can do but with aggregate functions. Let's continue with the prior query, but we want to specify that we are only interested in querying the average salary for employees that have been at the company for more than two years: `SELECT AVG(Salary) AS Avg_Salary, Tenure, Department FROM Employees GROUP BY Department HAVING Tenure > 2`.
+
+-   `ORDER BY`: This keyword allows us the sort specified columns in a specified order. For example, let's select the names of employees at the company, but we will order the results of the query by salary so that the smallest salaries are listed first: `SELECT EmployeeName, Salary FROM Employees ORDER BY Salary`. By default, SQL orders results in ascending order unless specified otherwise. If we wished to change this and have these results in descending order, we would specify as such: `SELECT EmployeeName, Salary FROM Employees ORDER BY Salary DESC`.
+
+-   `CASE`: This expression is a powerful tool that allows us to specify more complicated conditions to various clauses. For example, we may wish to select employee salaries ordered by the location status of employees (on-site, hybrid, or remote). However, for some of the employees, we do not have information on their work-from-home status. We still would like to sort the data with these employees so, when this data is not available, we will sort them by their tenure instead. This represents a situation where `CASE` comes in handy: `SELECT Salary, Work_Status, Tenure FROM Employees ORDER BY(CASE WHEN Work_Status IS NULL THEN Tenure ELSE Work_Status`. Still, it is worth noting that `CASE` can be used for so much for than this as it is a *very* flexible expression.
+
+-   `PROCEDURE`: Stored procedures are incredibly helpful tools if you find yourself using a specific query often. Rather than repeat this query over-and-over again, we can store this procedure as a simple line of code. For example, let's say that we are working on a project where we routinely execute a query where we select salaries of HR employees who have worked at the company for more than 3 years. The syntax for this query would be: `SELECT EmployeeName, Salary, Department, Tenure FROM Employees WHERE Department = 'HR AND Tenure > 3`. We can make our task easier, however, if we store this query as a simple command with `CREATE PROCEDURE` where we simply add it to the beginning of the query and name it (Tenured_HR): `CREATE PROCEDURE Tenured_HR AS SELECT EmployeeName, Salary, Department, Tenure FROM Employees WHERE Department = 'HR AND Tenure > 3 GO`. Now, if we were to run `EXEC Tenured_HR`, we would get the same results as the aforementioned query.
+
+-   Comments: Like other programming languages, SQL allows authors of queries to embed comments in their code, which is always best practice for maximal transparency. Comments can be embedded by `--` for comments on a single line and `/*`...`*/`for comments that take up numerous lines.
+
+## Translating R (dplyr) Into SQL
+
+### SQL Packages in R
+
+Okay! Now that we have a basic understanding of SQL, let's get to translating R into SQL. We will start off with simple tasks and then gradually move on to more complicated jobs. Before we get started, to make the process of comparing results between R and SQL easier, let's go over some core packages that are helpful when using SQL in R.
+
+-   `sqldf`: A simple package that allows you to run SQL syntax within R. Preface any SQL syntax with `sqldf()` and it should run in R.
+-   `dbplyr`: Translates `dplyr` data manipulation code into various SQL variants using `show_query()` at the end of a line of code.
+-   `DBI`: Allows for communication between R and various relational database management systems.
+-   SQL in Markdown/Quarto Code Chunks: If you are running SQL code chunks in RMarkdown/Quarto, specify `{sql, connection = db}`.
+
+Rather than actually connecting to a server elsewhere and using external data, I am going to use local data so that the data manipulation done in this document will align with the code found on my [Guide to Data Manipulation in R](https://htmlpreview.github.io/?https://github.com/Brian-Lookabaugh/Portfolio-Website/blob/main/DataManipulation-R.html) page. To do so, we need to execute the following code:
+
+```{r message=FALSE, warning=FALSE, include = FALSE}
+library(readxl)
+library(dbplyr)
+library(dplyr)
+```
+
+```{r message=FALSE, warning=FALSE}
+VDEM_data <- read_excel(
+  "C:/Users/brian/Desktop/Dissertation & Projects/Data/VDEM Example Data.xlsx")
+
+trade_data <- read_excel(
+  "C:/Users/brian/Desktop/Grad School/Data2/Data/Raw Spreadsheet Data/COW_Trade.xlsx")
+
+con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+
+copy_to(con, VDEM_data)
+copy_to(con, trade_data)
+
+vdem_data2 <- tbl(con, "VDEM_Data")
+trade_data2 <- tbl(con, "trade_data")
+```
+
+## Translating R Into SQL
+
+Great! From these lines of code, we have uploaded two local data sets to a SQL server and we are ready to begin translating R data manipulation code into SQL syntax.
+
+### Merging Data
+
+Let's begin by merging these two data sets together. In R, this could be achieved with the following code:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- inner_join(VDEM_data, trade_data,
+               by = c("ccode", "year"))
+```
+
+```{r message=FALSE, warning=FALSE, include = FALSE}
+copy_to(con, merged_data)
+merged_data2 <- tbl(con, "merged_data")
+```
+
+What would this look like in SQL? Let's take a look:
+
+```{sql, eval=FALSE}
+SELECT *
+FROM VDEM_data AS vdem
+INNER JOIN trade_data AS trade
+  ON (vdem.ccode = trade.ccode AND vdem.year = trade.year);
+```
+
+### SELECT-ing Columns
+
+Let's see how to preform something much simpler, such as selecting columns. For the remainder of this document, the first code chunk presented reflects R code while the latter presents SQL code. The most important thing to understand is that both code chunks achieve the *same* thing.
+
+```{r message=FALSE, warning=FALSE}
+keep_data <- merged_data %>%
+  select(c(ccode, year, e_gdppc, imports))
+```
+
+```{sql, eval=FALSE}
+SELECT ccode, year, e_gdppc, imports
+FROM merged_data;
+```
+
+### SELECT-ing Columns With Conditions on Rows
+
+Here, we begin to introduce the `WHERE` clause. We are going to first start off by filtering results so that only wealthier wealthier (e_gdppc \>= 10) democracies (v2x_regime \> 1) are present:
+
+```{r message=FALSE, warning=FALSE}
+rich_democs <- merged_data %>%
+  filter(v2x_regime > 1 & e_gdppc >= 10)
+```
+
+```{sql, eval=FALSE}
+SELECT *
+FROM merged_data
+WHERE v2x_regime > 1 AND e_gdppc >= 10;
+```
+
+Now, we are going to introduce the `OR` operator. We are going to filter results that includes democracies and/or large petroleum producers:
+
+```{r message=FALSE, warning=FALSE}
+democ_or_oil <- merged_data %>%
+  filter(v2x_regime > 1 | e_total_resources_income_pc >= 350)
+```
+
+```{sql, eval=FALSE}
+SELECT *
+FROM merged_data
+WHERE v2x_regime > 1 OR e_total_resources_income_pc >= 350;
+```
+
+### Dealing With Duplicates
+
+Now, let's compare how R and SQL handle finding and removing duplicate values:
+
+Finding Duplicates:
+
+```{r eval=FALSE}
+sum(duplicated(merged_data))
+```
+
+```{sql, eval=FALSE}
+SELECT ccode, year, COUNT(*)
+FROM merged_data
+GROUP BY ccode, year
+HAVING COUNT(*) > 1;
+```
+
+Removing Duplicates:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  distinct(ccode, year, .keep_all = TRUE)
+```
+
+```{sql, eval=FALSE}
+SELECT DISTINCT ccode, year
+FROM merged_data;
+```
+
+### Renaming Columns
+
+Here, we are going to rename the "e_gdppc" column:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  rename(gdp_pc = e_gdppc)
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       e_gdppc AS gdp_pc,
+FROM merged_data;
+```
+
+### Creating Dummy Variables
+
+Now, we are going to create a dummy variable for whether a country is democratic:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  mutate(democracy2 =
+    if_else(v2x_regime > 1, 1, 0))
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       CASE WHEN v2x_regime > 1 THEN 1
+            WHEN NOT v2x_regime > 1 THEN 0
+        END AS democracy2
+FROM merged_data;
+```
+
+### Creating Ordinal Variables
+
+Next, we will create a three-unit (0-2) ordinal variable for civil society strength:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  mutate(ordered_CSO = case_when(
+    v2xcs_ccsi < .33 ~ 0,
+    v2xcs_ccsi >= .33 & v2xcs_ccsi < .66 ~ 1,
+    v2xcs_ccsi >= .66 ~ 2
+  ))
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       CASE
+          WHEN v2xcs_ccsi < 0.33 THEN 0
+          WHEN v2xcs_ccsi >= 0.33 AND v2xcs_ccsi <0.66 THEN 1
+          WHEN v2xcs_ccsi > 0.66 THEN 2
+        END AS orderd_CSO
+FROM merged_data;
+```
+
+### Creating Categorical Variables
+
+Now, we are going to create a categorical variable which assigns numeric values to different regions:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  mutate(region = factor(case_when(
+    ccode < 100 ~ 1, ## North America 
+    ccode >= 100 & ccode < 200 ~ 2, ## South America
+    ccode >= 200 & ccode < 400 ~ 3, ## Europe
+    ccode >= 400 & ccode < 600 ~ 4, ## Sub-Saharan Africa
+    ccode >= 600 & ccode < 700 ~ 5, ## Middle East and North Africa
+    ccode >= 700 & ccode < 900 ~ 6, ## Asia
+    ccode >= 900 ~ 7 ## Oceania
+  )))
+```
+
+```{sql, eval=FALSE}
+SELECT *
+       factor(CASE
+                WHEN ccode < 100 THEN 1 -- North America
+                WHEN ccode >= 100 AND ccode < 200 THEN 2 -- South America
+                WHEN ccode >= 200 AND ccode < 400 THEN 3 -- Europe
+                WHEN ccode >= 400 AND ccode < 600 THEN 4 -- Sub-Saharan Africa
+                WHEN ccode >= 600 AND ccode < 700 THEN 5 -- Middle East and North Africa
+                WHEN ccode >= 700 AND ccode < 900 THEN 6 -- Asia
+                WHEN ccode >= 900 THEN 7 -- Oceania
+              END AS region)
+FROM merged_data;
+```
+
+### Creating Count Variables
+
+Here, we are going to create a variable counting the number of years that a country has been in the data set:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  group_by(ccode) %>%
+  mutate(year_count = row_number()) %>%
+  ungroup()
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       ROW_NUMBER() OVER (PARTITION BY ccode) AS year_count
+FROM merged_data;
+```
+
+We can also create a similar count variable that serves as a summary of the maximum number of years a country has spent in the data set:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  group_by(ccode) %>%
+  mutate(total_years = max(year_count)) %>%
+  ungroup()
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       MAX(year_count) OVER (PARTITION BY ccode) AS total_years
+FROM (
+  SELECT *,
+         ROW_NUMBER() OVER (PARTITION BY ccode) AS year_count
+  FROM merged_data);
+```
+
+### Creating Log-Transformed Variables
+
+SQL gives us the capacity to create log-transformed variables so we are going to create a log-transformed version of the GDP per capita variable:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  mutate(
+    lGDPpc = log(gdp_pc + 1)
+  )
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       LOG(gdp_pc + 1) AS lGDPpc
+FROM (
+  SELECT *,
+         e_gdppc AS gdp_pc
+  FROM merged_data);
+```
+
+### Creating Lagged and Lead Variables
+
+Lastly, for the creation of new variables (columns), we are going to compare R and SQL syntax for creating lagged and lead variables:
+
+Lagged Values
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  group_by(ccode) %>%
+  mutate(
+    lag_reg = lag(v2x_regime, n = 1, order_by = ccode)) %>%
+  ungroup()
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       LAG(v2x_regime, 1, NULL) OVER 
+        (PARTITION BY ccode ORDER BY ccode) AS lag_reg
+FROM merged_data;
+```
+
+Lead Values
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  group_by(ccode) %>%
+  mutate(
+    lead_reg = lead(v2x_regime, n = 1, order_by = ccode)) %>%
+  ungroup()
+```
+
+```{sql, eval=FALSE}
+SELECT *,
+       LEAD(v2x_regime, 1, NULL) OVER 
+        (PARTITION BY ccode ORDER BY ccode) AS lead_reg
+FROM merged_data;
+```
+
+### Arranging By Row Conditions Columns
+
+Here, we are going to specify the order we would like our rows to be sorted by. In particular, we are arrange our rows by country-year observations. Our first observation should be the country that is the first alphabetically in the earliest year recorded:
+
+```{r message=FALSE, warning=FALSE}
+merged_data <- merged_data %>%
+  arrange(country, year)
+```
+
+```{sql, eval=FALSE}
+SELECT *
+FROM merged_data
+ORDER BY country, year
+```
